@@ -114,6 +114,8 @@ DELIMITER ;
 
 -- Procedimientos
 -- Productos con stock bajo en cualquier bodega
+DROP PROCEDURE IF EXISTS productos_stock_bajo;
+DELIMITER $$
 CREATE PROCEDURE productos_stock_bajo()
 BEGIN
     SELECT p.id, p.nombre, b.nombre AS bodega, bp.stock
@@ -121,29 +123,72 @@ BEGIN
     JOIN bodega_producto bp ON p.id = bp.producto_id
     JOIN bodega b ON bp.bodega_id = b.id
     WHERE bp.stock < 10;
-END;
+END$$
+DELIMITER ;
 
--- Movimientos en rango de fechas
+-- ====================================================
+-- PROCEDURE: Movimientos en rango de fechas
+-- ====================================================
+DROP PROCEDURE IF EXISTS movimientos_por_fecha;
+DELIMITER $$
 CREATE PROCEDURE movimientos_por_fecha(IN fecha_ini DATETIME, IN fecha_fin DATETIME)
 BEGIN
-    SELECT * FROM movimiento m
-    WHERE m.fecha BETWEEN fecha_ini AND fecha_fin;
-END;
+    SELECT 
+        m.id,
+        m.fecha,
+        m.tipo,
+        m.usuario_id,
+        m.bodega_origen_id,
+        m.bodega_destino_id,
+        m.comentario
+    FROM movimiento m
+    WHERE m.fecha BETWEEN fecha_ini AND fecha_fin
+    ORDER BY m.fecha DESC;
+END$$
+DELIMITER ;
 
--- Auditoría por usuario o tipo de operación
-CREATE PROCEDURE auditoria_filtro(IN usuario INT, IN tipo_op VARCHAR(10))
+
+
+-- ====================================================
+-- PROCEDURE: Auditoría filtrada por usuario o tipo
+-- ====================================================
+DROP PROCEDURE IF EXISTS auditoria_filtro;
+DELIMITER $$
+CREATE PROCEDURE auditoria_filtro(
+    IN usuario INT,
+    IN tipo_op VARCHAR(10)
+)
 BEGIN
-    SELECT * FROM auditoria 
-    WHERE (usuario_id = usuario OR usuario IS NULL)
-      AND (tipo_operacion = tipo_op OR tipo_op IS NULL);
-END;
+    SELECT 
+        a.id,
+        a.entidad,
+        a.entidad_id,
+        a.tipo_operacion,
+        a.usuario_id,
+        a.fecha,
+        a.valores_anteriores,
+        a.valores_nuevos
+    FROM auditoria a
+    WHERE (a.usuario_id = usuario OR usuario IS NULL)
+      AND (a.tipo_operacion = tipo_op OR tipo_op IS NULL)
+    ORDER BY a.fecha DESC;
+END$$
+DELIMITER ;
 
--- Stock total por bodega
+
+
+-- ====================================================
+-- VIEW: Resumen de stock total por bodega
+-- ====================================================
+DROP VIEW IF EXISTS resumen_stock_bodega;
 CREATE VIEW resumen_stock_bodega AS
 SELECT
+    b.id AS bodega_id,
     b.nombre AS bodega,
+    p.id AS producto_id,
     p.nombre AS producto,
     bp.stock
 FROM bodega_producto bp
 JOIN bodega b ON bp.bodega_id = b.id
-JOIN producto p ON bp.producto_id = p.id;
+JOIN producto p ON bp.producto_id = p.id
+ORDER BY b.nombre, p.nombre;
