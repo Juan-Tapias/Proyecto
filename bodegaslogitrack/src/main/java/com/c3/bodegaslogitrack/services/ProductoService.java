@@ -2,16 +2,19 @@ package com.c3.bodegaslogitrack.services;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.c3.bodegaslogitrack.dto.ProductoDTO;
 import com.c3.bodegaslogitrack.entitie.Producto;
+import com.c3.bodegaslogitrack.exceptions.ResourceNotFoundException;
 import com.c3.bodegaslogitrack.repository.ProductoRepository;
 
 @Service
 
 public class ProductoService {
     
+    @Autowired
     private ProductoRepository productoRepository;
 
     // ----------------------------- Listar todos los productos
@@ -26,7 +29,7 @@ public class ProductoService {
     public ProductoDTO BuscarPorId(Long id){
         return productoRepository.findById(id)
                 .map(this::toDto)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
             }
     
     // ----------------------------- Crear Producto
@@ -44,7 +47,7 @@ public class ProductoService {
     // ----------------------------- Actualizar Producto
     public ProductoDTO actualizar(Long id, ProductoDTO dto) {
         Producto producto = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
         producto.setNombre(dto.getNombre());
         producto.setCategoria(dto.getCategoria());
         producto.setPrecio(dto.getPrecio());
@@ -57,14 +60,18 @@ public class ProductoService {
     // ----------------------------- Eliminar Producto
     public void eliminar(Long id) {
         if (!productoRepository.existsById(id)) {
-            throw new RuntimeException("Producto no encontrado");
+            throw new ResourceNotFoundException("Producto no encontrado");
         }
         productoRepository.deleteById(id);
     }
 
     // ---------------------------------- Listar productos por categoria
     public List<ProductoDTO> listarPorCategoria(String categoria) {
-        return productoRepository.findByCategoria(categoria)
+        List<Producto> productos = productoRepository.findByCategoria(categoria);
+        if (productos.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron productos");
+        }
+        return productos
                 .stream()
                 .map(this::toDto)
                 .toList();
@@ -72,7 +79,11 @@ public class ProductoService {
 
     // ---------------------------------- Listar productos por stock
     public List<ProductoDTO> listarPorStock(Integer stock) {
-        return productoRepository.findByStock(stock)
+        List<Producto> productos = productoRepository.findByStockLessThanEqual(stock);
+        if (productos.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron productos");
+        }
+        return productos
                 .stream()
                 .map(this::toDto)
                 .toList();
@@ -80,8 +91,11 @@ public class ProductoService {
 
     // ---------------------------------- Listar productos por precio
     public List<ProductoDTO> listarPorPrecio(Double precio) {
-        return productoRepository.findByPrecio(precio)
-                .stream()
+        List<Producto> productos = productoRepository.findByPrecioLessThanEqual(precio);
+        if (productos.isEmpty()) {
+            throw new ResourceNotFoundException("No se encontraron productos");
+        }
+        return productos.stream()
                 .map(this::toDto)
                 .toList();
     }
