@@ -14,12 +14,19 @@ import lombok.NoArgsConstructor;
 public class UsuarioDto {
 
     @NotBlank(message = "El usuario no puede estar vacio")
-    @Size(max = 100, message = "El nombre no puede tener mas de 100 caracteres")
+    @Size(max = 50, message = "El usuario no puede tener mas de 100 caracteres")
     private String username;
 
+    @NotBlank(message = "La password no puede estar vacio")
+    @Size(max = 255, message = "La password no puede tener mas de 255 caracteres")
     private String password;
+
     private Rol rol;
+
+    @NotBlank(message = "El nombre no puede estar vacio")
+    @Size(max = 50, message = "El nombre no puede tener mas de 100 caracteres")
     private String nombre;
+
     private Boolean activo;
 
 }
