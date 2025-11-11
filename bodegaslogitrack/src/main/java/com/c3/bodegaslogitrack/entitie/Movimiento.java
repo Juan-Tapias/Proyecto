@@ -1,12 +1,21 @@
 package com.c3.bodegaslogitrack.entitie;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.c3.bodegaslogitrack.entitie.enums.TipoMovimiento;
+
 @Entity
 @Table(name = "movimiento")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Movimiento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,40 +46,5 @@ public class Movimiento {
     @OneToMany(mappedBy = "movimiento", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MovimientoDetalle> detalles = new ArrayList<>();
 
-    // Constructores
-    public Movimiento() {}
-
-    public Movimiento(TipoMovimiento tipo, Usuario usuario) {
-        this.tipo = tipo;
-        this.usuario = usuario;
-    }
-
-    // Getters y Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public LocalDateTime getFecha() { return fecha; }
-    public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
-
-    public TipoMovimiento getTipo() { return tipo; }
-    public void setTipo(TipoMovimiento tipo) { this.tipo = tipo; }
-
-    public Usuario getUsuario() { return usuario; }
-    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
-
-    public Bodega getBodegaOrigen() { return bodegaOrigen; }
-    public void setBodegaOrigen(Bodega bodegaOrigen) { this.bodegaOrigen = bodegaOrigen; }
-
-    public Bodega getBodegaDestino() { return bodegaDestino; }
-    public void setBodegaDestino(Bodega bodegaDestino) { this.bodegaDestino = bodegaDestino; }
-
-    public String getComentario() { return comentario; }
-    public void setComentario(String comentario) { this.comentario = comentario; }
-
-    public List<MovimientoDetalle> getDetalles() { return detalles; }
-    public void setDetalles(List<MovimientoDetalle> detalles) { this.detalles = detalles; }
 }
 
-enum TipoMovimiento {
-    ENTRADA, SALIDA, TRANSFERENCIA
-}

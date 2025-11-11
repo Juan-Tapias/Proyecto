@@ -1,6 +1,6 @@
 package com.c3.bodegaslogitrack.dto;
 
-import com.c3.bodegaslogitrack.entitie.Rol;
+import com.c3.bodegaslogitrack.entitie.enums.Rol;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
