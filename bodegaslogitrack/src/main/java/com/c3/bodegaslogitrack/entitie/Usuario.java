@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.c3.bodegaslogitrack.entitie.enums.Rol;
+
 @Entity
 @Table(name = "usuario")
 @Data
