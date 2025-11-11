@@ -29,12 +29,20 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    public boolean login(String nombre, String password){
+    public UsuarioDto login(String nombre, String password) {
         Optional<Usuario> usuarioOp = usuarioRepository.findByUsername(nombre);
-        if (usuarioOp.isPresent()){
+        if (usuarioOp.isPresent()) {
             Usuario usuario = usuarioOp.get();
-            return passwordEncoder.matches(password, usuario.getPassword());
+            if (passwordEncoder.matches(password, usuario.getPassword())) {
+                UsuarioDto dto = new UsuarioDto();
+                dto.setUsername(usuario.getUsername());
+                dto.setNombre(usuario.getNombre());
+                dto.setRol(usuario.getRol());
+                dto.setActivo(usuario.getActivo());
+                return dto;
+            }
         }
-        return false;
+        return null;
     }
+
 }
