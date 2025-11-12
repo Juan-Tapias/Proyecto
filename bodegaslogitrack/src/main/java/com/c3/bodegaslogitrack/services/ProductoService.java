@@ -3,6 +3,7 @@ package com.c3.bodegaslogitrack.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.c3.bodegaslogitrack.dto.ProductoDTO;
@@ -16,6 +17,16 @@ public class ProductoService {
     
     @Autowired
     private ProductoRepository productoRepository;
+
+     @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public void actualizarStockJdbc(Long productoId, int cantidad) {
+        jdbcTemplate.update(
+            "UPDATE producto SET stock = stock + ? WHERE id = ?",
+            cantidad, productoId
+        );
+    }
 
     // ----------------------------- Listar todos los productos
     public List<ProductoDTO> listar(){
