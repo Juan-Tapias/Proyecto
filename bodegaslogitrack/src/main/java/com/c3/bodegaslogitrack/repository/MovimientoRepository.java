@@ -15,7 +15,7 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
     List<Movimiento> findByUsuario(Usuario usuario);
 
     //-----------------------------  Buscar por tipos
-    List<Movimiento> findByTipo(TipoMovimiento tipo);
+    List<Movimiento> findByTipoMovimiento(TipoMovimiento tipo);
 
     //----------------------------- Buscar por rango de fechas
     List<Movimiento> findByFechaBetween(LocalDateTime inicio, LocalDateTime fin);

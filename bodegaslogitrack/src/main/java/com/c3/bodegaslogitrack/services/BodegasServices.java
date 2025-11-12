@@ -3,6 +3,7 @@ package com.c3.bodegaslogitrack.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.c3.bodegaslogitrack.dto.BodegaDTO;
@@ -17,7 +18,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class BodegasServices {
-
+    
+    @Autowired
     private final BodegaRepository bodegaRepository;
     private final UsuarioRepository usuarioRepository;
 

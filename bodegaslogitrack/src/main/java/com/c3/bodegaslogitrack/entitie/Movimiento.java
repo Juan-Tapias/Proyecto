@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.c3.bodegaslogitrack.entitie.enums.TipoMovimiento;
 
@@ -17,6 +15,7 @@ import com.c3.bodegaslogitrack.entitie.enums.TipoMovimiento;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Movimiento {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,23 +27,19 @@ public class Movimiento {
     @Column(name = "tipo", nullable = false)
     private TipoMovimiento tipo;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "bodega_origen_id")
     private Bodega bodegaOrigen;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "bodega_destino_id")
     private Bodega bodegaDestino;
 
     @Column(name = "comentario", length = 255)
     private String comentario;
 
-    @OneToMany(mappedBy = "movimiento", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MovimientoDetalle> detalles = new ArrayList<>();
-
 }
-
