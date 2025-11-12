@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.c3.bodegaslogitrack.dto.ProductoDTO;
@@ -62,10 +63,13 @@ public class ProductoController {
     // ================================== POST =======================
 
     @PostMapping
-    public ResponseEntity<ProductoDTO> crear(@RequestBody ProductoDTO dto) {
-        ProductoDTO nuevoProducto = productoService.crear(dto);
+    public ResponseEntity<ProductoDTO> crear(
+            @RequestBody ProductoDTO dto,
+            @RequestParam Long usuarioId) {
+        ProductoDTO nuevoProducto = productoService.crear(dto, usuarioId);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoProducto);
     }
+
 
     // ================================== PUT ========================
 

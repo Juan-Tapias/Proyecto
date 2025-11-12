@@ -5,11 +5,15 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.c3.bodegaslogitrack.dto.ProductoDTO;
 import com.c3.bodegaslogitrack.entitie.Producto;
 import com.c3.bodegaslogitrack.exceptions.ResourceNotFoundException;
 import com.c3.bodegaslogitrack.repository.ProductoRepository;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 
@@ -20,6 +24,10 @@ public class ProductoService {
 
      @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @PersistenceContext
+    private EntityManager em; 
+
 
     public void actualizarStockJdbc(Long productoId, int cantidad) {
         jdbcTemplate.update(
@@ -42,16 +50,23 @@ public class ProductoService {
                 .map(this::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
             }
-    
-    // ----------------------------- Crear Producto
-    public ProductoDTO crear(ProductoDTO dto){
+    //----------------------------- Crear Producto
+    @Transactional
+    public ProductoDTO crear(ProductoDTO dto, Long usuarioId) {
+
+        em.createNativeQuery("SET @current_user_id = :userId")
+          .setParameter("userId", usuarioId)
+          .executeUpdate();
+
         Producto producto = new Producto();
         producto.setNombre(dto.getNombre());
         producto.setCategoria(dto.getCategoria());
         producto.setPrecio(dto.getPrecio());
         producto.setStock(dto.getStock());
         producto.setActivo(dto.getActivo());
+
         productoRepository.save(producto);
+
         return toDto(producto);
     }
 
