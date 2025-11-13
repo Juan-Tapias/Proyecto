@@ -3,12 +3,14 @@ package com.c3.bodegaslogitrack.services;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.c3.bodegaslogitrack.dto.MovimientoDTO;
 import com.c3.bodegaslogitrack.dto.MovimientoDetalleDTO;
+import com.c3.bodegaslogitrack.dto.MovimientoResponseDTO;
 import com.c3.bodegaslogitrack.entitie.Bodega;
 import com.c3.bodegaslogitrack.entitie.Movimiento;
 import com.c3.bodegaslogitrack.entitie.MovimientoDetalle;
@@ -35,7 +37,7 @@ public class MovimientosServices {
     private final ProductoRepository productoRepository;
 
     @PersistenceContext
-    private EntityManager em; // <- Aquí inyectas el EntityManager
+    private EntityManager em;
 
     @Transactional
     public MovimientoDTO crearMovimiento(MovimientoDTO dto) {
@@ -65,7 +67,6 @@ public class MovimientosServices {
             Producto producto = productoRepository.findById(detDTO.getProductoId())
                     .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
 
-            // Validar stock si es SALIDA o TRANSFERENCIA
             if ((dto.getTipoMovimiento() == TipoMovimiento.SALIDA
                     || dto.getTipoMovimiento() == TipoMovimiento.TRANSFERENCIA)
                     && producto.getStock() < detDTO.getCantidad()) {
@@ -78,7 +79,6 @@ public class MovimientosServices {
                 case TRANSFERENCIA -> producto.getStock();
             };
 
-            // 🔹 Aquí seteas la variable de sesión antes de guardar
             em.createNativeQuery("SET @current_user_id = :userId")
               .setParameter("userId", usuario.getId())
               .executeUpdate();
@@ -99,23 +99,40 @@ public class MovimientosServices {
         return toDto(guardado);
     }
 
-    /** READ ALL */
-    public List<MovimientoDTO> listarMovimientos() {
-        List<MovimientoDTO> listaDTO = new ArrayList<>();
-        for (Movimiento m : movimientoRepository.findAll()) {
-            listaDTO.add(toDto(m));
-        }
-        return listaDTO;
+    public List<MovimientoResponseDTO> listarMovimientos() {
+        return movimientoRepository.findAll().stream().map(mov -> {
+            MovimientoResponseDTO dto = new MovimientoResponseDTO();
+            dto.setId(mov.getId());
+            dto.setTipoMovimiento(mov.getTipo().toString());
+            dto.setComentario(mov.getComentario());
+            dto.setFecha(mov.getFecha());
+            dto.setUsuarioNombre(mov.getUsuario().getNombre());
+            dto.setBodegaOrigenNombre(
+                    mov.getBodegaOrigen() != null ? mov.getBodegaOrigen().getNombre() : null
+            );
+            dto.setBodegaDestinoNombre(
+                    mov.getBodegaDestino() != null ? mov.getBodegaDestino().getNombre() : null
+            );
+
+            dto.setDetalles(
+                    mov.getDetalles().stream().map(det -> {
+                        MovimientoResponseDTO.DetalleDTO detDto = new MovimientoResponseDTO.DetalleDTO();
+                        detDto.setProductoNombre(det.getProducto().getNombre());
+                        detDto.setCantidad(det.getCantidad());
+                        return detDto;
+                    }).collect(Collectors.toList())
+            );
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 
-    /** READ BY ID */
     public MovimientoDTO obtenerPorId(Long id) {
         Movimiento movimiento = movimientoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Movimiento no encontrado"));
         return toDto(movimiento);
     }
 
-    /** UPDATE */
     @Transactional
     public MovimientoDTO actualizarMovimiento(Long id, MovimientoDTO dto) {
         Movimiento movimiento = movimientoRepository.findById(id)
@@ -139,15 +156,45 @@ public class MovimientosServices {
         return toDto(movimientoRepository.save(movimiento));
     }
 
-    /** DELETE */
     @Transactional
     public void eliminarMovimiento(Long id) {
         Movimiento movimiento = movimientoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Movimiento no encontrado"));
         movimientoRepository.delete(movimiento);
     }
+    
+   
+    public List<MovimientoResponseDTO> buscarPorRangoFechas(LocalDateTime inicio, LocalDateTime fin) {
+        List<Movimiento> movimientos = movimientoRepository.findByFechaBetween(inicio, fin);
 
-    /** CONVERSIÓN ENTIDAD -> DTO */
+        return movimientos.stream().map(mov -> {
+            MovimientoResponseDTO dto = new MovimientoResponseDTO();
+
+            dto.setId(mov.getId());
+            dto.setTipoMovimiento(mov.getTipo().name());
+            dto.setComentario(mov.getComentario());
+            dto.setFecha(mov.getFecha());
+
+            dto.setUsuarioNombre(mov.getUsuario().getNombre());
+            dto.setBodegaOrigenNombre(
+                mov.getBodegaOrigen() != null ? mov.getBodegaOrigen().getNombre() : null
+            );
+            dto.setBodegaDestinoNombre(
+                mov.getBodegaDestino() != null ? mov.getBodegaDestino().getNombre() : null
+            );
+            List<MovimientoResponseDTO.DetalleDTO> detalles = mov.getDetalles().stream().map(det -> {
+                MovimientoResponseDTO.DetalleDTO detalleDTO = new MovimientoResponseDTO.DetalleDTO();
+                detalleDTO.setProductoNombre(det.getProducto().getNombre());
+                detalleDTO.setCantidad(det.getCantidad());
+                return detalleDTO;
+            }).toList();
+
+            dto.setDetalles(detalles);
+
+            return dto;
+        }).toList();
+    }
+
     private MovimientoDTO toDto(Movimiento movimiento) {
         MovimientoDTO dto = new MovimientoDTO();
         dto.setUsuarioId(movimiento.getUsuario().getId());
@@ -164,4 +211,5 @@ public class MovimientosServices {
 
         return dto;
     }
+
 }
