@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductoDTO {
+    private Long id;
     @NotBlank(message = "El nombre no puede estar vacío")
     @Size(max = 100, message = "El nombre no puede tener más de 100 caracteres")
     private String nombre;
@@ -26,4 +27,6 @@ public class ProductoDTO {
     private Double precio;
 
     private Boolean activo;
+    private Long usuarioId; 
+
 }
