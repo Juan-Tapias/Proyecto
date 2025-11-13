@@ -4,10 +4,12 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 import com.c3.bodegaslogitrack.entitie.enums.TipoMovimiento;
 
@@ -44,7 +46,21 @@ public class Movimiento {
     @Column(name = "comentario", length = 255)
     private String comentario;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "movimiento", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MovimientoDetalle> detalles = new ArrayList<>();
+    private Set<MovimientoDetalle> detalles = new HashSet<>();
 
+    // ===== Evita ConcurrentModificationException =====
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Movimiento)) return false;
+        Movimiento that = (Movimiento) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

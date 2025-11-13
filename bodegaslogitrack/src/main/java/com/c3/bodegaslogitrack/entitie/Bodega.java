@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "bodega")
@@ -14,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Bodega {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,13 +34,29 @@ public class Bodega {
     @JoinColumn(name = "encargado_id", nullable = false)
     private Usuario encargado;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "bodega", cascade = CascadeType.ALL)
     private List<BodegaProducto> productos = new ArrayList<>();
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "bodegaOrigen", cascade = CascadeType.ALL)
     private List<Movimiento> movimientosOrigen = new ArrayList<>();
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "bodegaDestino", cascade = CascadeType.ALL)
     private List<Movimiento> movimientosDestino = new ArrayList<>();
 
+    // ===== Evita ConcurrentModificationException =====
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Bodega)) return false;
+        Bodega bodega = (Bodega) o;
+        return Objects.equals(id, bodega.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

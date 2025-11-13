@@ -45,4 +45,15 @@ public class UsuarioService {
         return null;
     }
 
+    public Usuario loginEntity(String username, String password) {
+    Optional<Usuario> usuarioOp = usuarioRepository.findByUsername(username);
+    if (usuarioOp.isPresent()) {
+        Usuario usuario = usuarioOp.get();
+        if (passwordEncoder.matches(password, usuario.getPassword())) {
+            return usuario;
+        }
+    }
+    return null;
+    }
+
 }
