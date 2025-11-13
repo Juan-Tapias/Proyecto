@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "producto")
@@ -33,10 +35,25 @@ public class Producto {
     @Column(name = "activo")
     private Boolean activo = true;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL)
     private List<BodegaProducto> bodegas = new ArrayList<>();
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL)
     private List<MovimientoDetalle> movimientoDetalles = new ArrayList<>();
 
+    // ===== Evita ConcurrentModificationException =====
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Producto)) return false;
+        Producto producto = (Producto) o;
+        return Objects.equals(id, producto.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

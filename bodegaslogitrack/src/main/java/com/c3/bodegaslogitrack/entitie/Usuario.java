@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 import com.c3.bodegaslogitrack.entitie.enums.Rol;
 
@@ -36,21 +38,39 @@ public class Usuario {
     @Column(name = "activo")
     private Boolean activo = true;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "encargado", cascade = CascadeType.ALL)
-    private List<Bodega> bodegasEncargadas = new ArrayList<>();
+    private Set<Bodega> bodegasEncargadas = new HashSet<>();
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private List<Movimiento> movimientos = new ArrayList<>();
+    private Set<Movimiento> movimientos = new HashSet<>();
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private List<Auditoria> auditorias = new ArrayList<>();
+    private Set<Auditoria> auditorias = new HashSet<>();
 
-    public List<Bodega> getBodegasEncargadas() { return bodegasEncargadas; }
-    public void setBodegasEncargadas(List<Bodega> bodegasEncargadas) { this.bodegasEncargadas = bodegasEncargadas; }
+    // Getters y setters
+    public Set<Bodega> getBodegasEncargadas() { return bodegasEncargadas; }
+    public void setBodegasEncargadas(Set<Bodega> bodegasEncargadas) { this.bodegasEncargadas = bodegasEncargadas; }
 
-    public List<Movimiento> getMovimientos() { return movimientos; }
-    public void setMovimientos(List<Movimiento> movimientos) { this.movimientos = movimientos; }
+    public Set<Movimiento> getMovimientos() { return movimientos; }
+    public void setMovimientos(Set<Movimiento> movimientos) { this.movimientos = movimientos; }
 
-    public List<Auditoria> getAuditorias() { return auditorias; }
-    public void setAuditorias(List<Auditoria> auditorias) { this.auditorias = auditorias; }
+    public Set<Auditoria> getAuditorias() { return auditorias; }
+    public void setAuditorias(Set<Auditoria> auditorias) { this.auditorias = auditorias; }
+
+    // ===== Evita ConcurrentModificationException =====
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Usuario)) return false;
+        Usuario usuario = (Usuario) o;
+        return Objects.equals(id, usuario.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
