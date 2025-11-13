@@ -39,7 +39,9 @@ public class AuthController {
                     usuarioEncontrado.getUsername(),
                     usuarioEncontrado.getRol().name()
             );
+
             return ResponseEntity.ok(Map.of(
+                    "id", usuarioEncontrado.getId(),
                     "token", token,
                     "rol", usuarioEncontrado.getRol().name(),
                     "username", usuarioEncontrado.getUsername()
@@ -49,4 +51,5 @@ public class AuthController {
                     .body("Credenciales inválidas");
         }
     }
+
 }

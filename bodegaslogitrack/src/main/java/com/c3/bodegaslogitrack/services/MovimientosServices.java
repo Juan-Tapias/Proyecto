@@ -93,11 +93,9 @@ public MovimientoDTO crearMovimiento(MovimientoDTO dto) {
             detalle.setCantidad(detDTO.getCantidad());
             detalle.setMovimiento(movimiento);
 
-            // Agregar directamente al Set
             detallesSet.add(detalle);
         }
 
-        // Asignar el Set al Movimiento
         movimiento.setDetalles(detallesSet);
 
         Movimiento guardado = movimientoRepository.save(movimiento);
