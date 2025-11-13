@@ -1,5 +1,6 @@
 package com.c3.bodegaslogitrack.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,9 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
     //-----------------------------  Buscar por tipos
     List<Movimiento> findByTipo(TipoMovimiento tipo);
 
+    //----------------------------- contar entre fechas
+    Long countByFechaBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
+
+    //----------------------------- Listar entre fechas
+    List<Movimiento> findByFechaBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
 }

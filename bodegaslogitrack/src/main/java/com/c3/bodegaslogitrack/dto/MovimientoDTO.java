@@ -1,5 +1,6 @@
 package com.c3.bodegaslogitrack.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.c3.bodegaslogitrack.entitie.enums.TipoMovimiento;
@@ -17,5 +18,6 @@ public class MovimientoDTO {
     private String comentario;
     private Long bodegaOrigenId;
     private Long bodegaDestinoId;
+    private LocalDateTime fecha = LocalDateTime.now();
     private List<MovimientoDetalleDTO> detalles;
 }
