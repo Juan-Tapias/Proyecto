@@ -19,7 +19,7 @@ import java.util.Map;
 @RequestMapping("/api/admin/usuarios")
 @PreAuthorize("hasRole('ADMIN')")
 @Validated
-public class UsuarioController {
+public class AdminUsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
