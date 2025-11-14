@@ -51,5 +51,4 @@ public class AuthController {
                     .body("Credenciales inválidas");
         }
     }
-
 }

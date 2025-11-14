@@ -1,6 +1,8 @@
 package com.c3.bodegaslogitrack.services;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -54,6 +56,73 @@ public class UsuarioService {
         }
     }
     return null;
+    }
+
+    public List<UsuarioDto> listarTodos() {
+    List<Usuario> usuarios = usuarioRepository.findAll();
+    return usuarios.stream()
+            .map(this::convertToResponseDto)
+            .collect(Collectors.toList());
+    }
+
+    public UsuarioDto buscarPorUsername(String username) {
+    Usuario usuario = usuarioRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+    return convertToResponseDto(usuario);
+    }
+
+    public UsuarioDto crearUsuario(UsuarioDto usuarioDto) {
+    if (usuarioRepository.existsByUsername(usuarioDto.getUsername())) {
+        throw new RuntimeException("El username ya está en uso");
+    }
+    
+    Usuario usuario = new Usuario();
+    usuario.setUsername(usuarioDto.getUsername());
+    usuario.setPassword(passwordEncoder.encode(usuarioDto.getPassword()));
+    usuario.setRol(usuarioDto.getRol());
+    usuario.setNombre(usuarioDto.getNombre());
+    usuario.setActivo(usuarioDto.getActivo());
+    
+    Usuario usuarioGuardado = usuarioRepository.save(usuario);
+    return convertToResponseDto(usuarioGuardado);
+    }
+
+    public UsuarioDto actualizarUsuario(Long id, UsuarioDto usuarioDto) {
+    Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+    if (!usuario.getUsername().equals(usuarioDto.getUsername()) && 
+        usuarioRepository.existsByUsername(usuarioDto.getUsername())) {
+        throw new RuntimeException("El username ya está en uso");
+    }
+    
+    usuario.setUsername(usuarioDto.getUsername());
+    usuario.setRol(usuarioDto.getRol());
+    usuario.setNombre(usuarioDto.getNombre());
+    usuario.setActivo(usuarioDto.getActivo());
+    if (usuarioDto.getPassword() != null && !usuarioDto.getPassword().isEmpty()) {
+        usuario.setPassword(passwordEncoder.encode(usuarioDto.getPassword()));
+    }
+    
+    Usuario usuarioActualizado = usuarioRepository.save(usuario);
+    return convertToResponseDto(usuarioActualizado);
+    }
+
+    public void eliminarUsuario(String username) {
+    Usuario usuario = usuarioRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+    usuario.setActivo(false); // Borrado lógico
+    usuarioRepository.save(usuario);
+    }
+
+   private UsuarioDto convertToResponseDto(Usuario usuario) {
+        UsuarioDto dto = new UsuarioDto();
+        dto.setId(usuario.getId());
+        dto.setUsername(usuario.getUsername());
+        dto.setRol(usuario.getRol());
+        dto.setNombre(usuario.getNombre());
+        dto.setActivo(usuario.getActivo());
+        dto.setCantidadBodegas(usuario.getBodegasEncargadas().size());
+        return dto;
     }
 
 }
