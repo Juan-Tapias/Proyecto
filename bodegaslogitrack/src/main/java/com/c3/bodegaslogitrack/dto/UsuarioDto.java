@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioDto {
+    private Long id;
 
     @NotBlank(message = "El usuario no puede estar vacio")
     @Size(max = 50, message = "El usuario no puede tener mas de 100 caracteres")
@@ -28,5 +29,7 @@ public class UsuarioDto {
     private String nombre;
 
     private Boolean activo;
+
+     private Integer cantidadBodegas;
 
 }
