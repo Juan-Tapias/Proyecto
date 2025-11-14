@@ -13,6 +13,9 @@ import com.c3.bodegaslogitrack.exceptions.ResourceNotFoundException;
 import com.c3.bodegaslogitrack.repository.BodegaRepository;
 import com.c3.bodegaslogitrack.repository.UsuarioRepository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,6 +25,9 @@ public class BodegasServices {
     @Autowired
     private final BodegaRepository bodegaRepository;
     private final UsuarioRepository usuarioRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     //---------------------------------- Listar todas las bodegas 
     public List<BodegaDTO> listar(){
@@ -38,45 +44,63 @@ public class BodegasServices {
                 .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada"));
             }
 
-    //----------------------------------- Crear Bodegas
-    public BodegaDTO crear(BodegaDTO dto){
+ //----------------------------------- Crear Bodegas
+    @Transactional
+    public BodegaDTO crear(BodegaDTO dto) {
+
         Bodega bodega = new Bodega();
         bodega.setNombre(dto.getNombre());
         bodega.setUbicacion(dto.getUbicacion());
         bodega.setCapacidad(dto.getCapacidad());
-        
-        if(dto.getEncargadoId() != null){
-            Usuario encargardo = usuarioRepository.findById(dto.getEncargadoId())
-                                    .orElseThrow(() -> new ResourceNotFoundException("Encargado no encontrado"));
-            bodega.setEncargado(encargardo);
+
+        if (dto.getEncargadoUserName() != null && !dto.getEncargadoUserName().isBlank()) {
+
+            Usuario encargado = usuarioRepository
+                    .findByUsername(dto.getEncargadoUserName()) 
+                    .orElseThrow(() -> new ResourceNotFoundException("Encargado no encontrado"));
+
+            bodega.setEncargado(encargado);
+        }
+
+        bodegaRepository.save(bodega);
+
+        return toDto(bodega); 
+    }
+    //-------------------------------------Actualizar Bodegas
+    @Transactional
+    public BodegaDTO actualizar(Long id, BodegaDTO dto) {
+        Bodega bodega = bodegaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada"));
+
+        bodega.setNombre(dto.getNombre());
+        bodega.setUbicacion(dto.getUbicacion());
+        bodega.setCapacidad(dto.getCapacidad());
+
+        if (dto.getEncargadoId() != null) {
+            Usuario encargado = usuarioRepository.findById(dto.getEncargadoId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Encargado no encontrado"));
+            bodega.setEncargado(encargado);
         }
         bodegaRepository.save(bodega);
         return toDto(bodega);
     }
 
-    //-------------------------------------Actualizar Bodegas
-public BodegaDTO actualizar(Long id, BodegaDTO dto) {
-    Bodega bodega = bodegaRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada"));
-
-    bodega.setNombre(dto.getNombre());
-    bodega.setUbicacion(dto.getUbicacion());
-    bodega.setCapacidad(dto.getCapacidad());
-
-    if (dto.getEncargadoId() != null) {
-        Usuario encargado = usuarioRepository.findById(dto.getEncargadoId())
-                .orElseThrow(() -> new ResourceNotFoundException("Encargado no encontrado"));
-        bodega.setEncargado(encargado);
-    }
-    bodegaRepository.save(bodega);
-    return toDto(bodega);
-}
-
     //----------------------------------------Eliminar Bodega
-    public void eliminar(Long id){
-        if (!bodegaRepository.existsById(id)){
+    @Transactional
+    public void eliminar(Long id, Long usuarioId) {
+        // Validar usuario
+        if (usuarioId == null) {
+            throw new RuntimeException("UsuarioId requerido para auditoría");
+        }
+
+        entityManager.createNativeQuery("SET @current_user_id = :userId")
+            .setParameter("userId", usuarioId)
+            .executeUpdate();
+
+        if (!bodegaRepository.existsById(id)) {
             throw new ResourceNotFoundException("Bodega no encontrada");
         }
+
         bodegaRepository.deleteById(id);
     }
 
@@ -110,14 +134,15 @@ public BodegaDTO actualizar(Long id, BodegaDTO dto) {
     }
 
     //----------------------------------------Cambiar a DTO
-    private BodegaDTO toDto(Bodega bodega){
+    public BodegaDTO toDto(Bodega bodega) {
         BodegaDTO dto = new BodegaDTO();
+        dto.setId(bodega.getId());  // ← Esto puede estar faltando
         dto.setNombre(bodega.getNombre());
         dto.setUbicacion(bodega.getUbicacion());
         dto.setCapacidad(bodega.getCapacidad());
-        dto.setEncargadoId(bodega.getEncargado() == null ? null : bodega.getEncargado().getId());
-        
+        dto.setEncargadoUserName(bodega.getEncargado() != null ? bodega.getEncargado().getUsername() : null);
         return dto;
     }
+
 
 }
