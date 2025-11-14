@@ -27,6 +27,7 @@ public class ProductoDTO {
     private Double precio;
 
     private Boolean activo;
+    
     private Long usuarioId; 
 
 }
