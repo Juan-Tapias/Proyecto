@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,8 +16,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/usuarios")
-@PreAuthorize("hasRole('ADMIN')")
-@Validated
 public class AdminUsuarioController {
 
     @Autowired
@@ -45,16 +42,16 @@ public class AdminUsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
     }
 
-    // PUT - Actualizar usuario por username
+    // PUT - Actualizar usuario por id
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioDto> actualizarUsuario(
-            @PathVariable Long id, 
+            @PathVariable Long id,  
             @Valid @RequestBody UsuarioDto usuarioDto) {
         UsuarioDto usuarioActualizado = usuarioService.actualizarUsuario(id, usuarioDto);
         return ResponseEntity.ok(usuarioActualizado);
     }
 
-    // DELETE - Eliminar usuario por username (borrado lógico)
+    // DELETE - Eliminar usuario por username
     @DeleteMapping("/{username}")
     public ResponseEntity<?> eliminarUsuario(@PathVariable String username) {
         usuarioService.eliminarUsuario(username);

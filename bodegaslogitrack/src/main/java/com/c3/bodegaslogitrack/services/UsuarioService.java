@@ -63,7 +63,7 @@ public class UsuarioService {
     return usuarios.stream()
             .map(this::convertToResponseDto)
             .collect(Collectors.toList());
-    }
+}
 
     public UsuarioDto buscarPorUsername(String username) {
     Usuario usuario = usuarioRepository.findByUsername(username)
@@ -72,19 +72,8 @@ public class UsuarioService {
     }
 
     public UsuarioDto crearUsuario(UsuarioDto usuarioDto) {
-    if (usuarioRepository.existsByUsername(usuarioDto.getUsername())) {
-        throw new RuntimeException("El username ya está en uso");
-    }
-    
-    Usuario usuario = new Usuario();
-    usuario.setUsername(usuarioDto.getUsername());
-    usuario.setPassword(passwordEncoder.encode(usuarioDto.getPassword()));
-    usuario.setRol(usuarioDto.getRol());
-    usuario.setNombre(usuarioDto.getNombre());
-    usuario.setActivo(usuarioDto.getActivo());
-    
-    Usuario usuarioGuardado = usuarioRepository.save(usuario);
-    return convertToResponseDto(usuarioGuardado);
+    Usuario usuarioRegistrado = registrar(usuarioDto);
+    return convertToResponseDto(usuarioRegistrado);
     }
 
     public UsuarioDto actualizarUsuario(Long id, UsuarioDto usuarioDto) {
@@ -110,8 +99,8 @@ public class UsuarioService {
     public void eliminarUsuario(String username) {
     Usuario usuario = usuarioRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
-    usuario.setActivo(false); // Borrado lógico
-    usuarioRepository.save(usuario);
+    
+    usuarioRepository.delete(usuario);
     }
 
    private UsuarioDto convertToResponseDto(Usuario usuario) {
