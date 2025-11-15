@@ -1,6 +1,7 @@
 package com.c3.bodegaslogitrack.dto;
 
 import com.c3.bodegaslogitrack.entitie.enums.Rol;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -18,7 +19,6 @@ public class UsuarioDto {
     @Size(max = 50, message = "El usuario no puede tener mas de 100 caracteres")
     private String username;
 
-    @NotBlank(message = "La password no puede estar vacio")
     @Size(max = 255, message = "La password no puede tener mas de 255 caracteres")
     private String password;
 
@@ -30,6 +30,7 @@ public class UsuarioDto {
 
     private Boolean activo;
 
+    @JsonIgnore
      private Integer cantidadBodegas;
 
 }

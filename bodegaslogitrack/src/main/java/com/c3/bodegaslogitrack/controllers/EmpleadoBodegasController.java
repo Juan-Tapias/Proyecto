@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
 import com.c3.bodegaslogitrack.dto.BodegaDTO;
+import com.c3.bodegaslogitrack.dto.ProductoBodegaDto;
+import com.c3.bodegaslogitrack.services.BodegaProductoService;
 import com.c3.bodegaslogitrack.services.BodegasServices;
 
 import java.util.List;
@@ -13,12 +15,13 @@ import java.util.List;
 public class EmpleadoBodegasController {
 
     private final BodegasServices bodegasServices;
+    private final BodegaProductoService bodegaProductoService;
 
-    public EmpleadoBodegasController(BodegasServices bodegasServices) {
+
+    public EmpleadoBodegasController(BodegasServices bodegasServices, BodegaProductoService bodegaProductoService) {
         this.bodegasServices = bodegasServices;
+        this.bodegaProductoService = bodegaProductoService;
     }
-
-    // ==================== GET =======================
 
     @GetMapping
     public ResponseEntity<List<BodegaDTO>> getAll(
@@ -35,20 +38,13 @@ public class EmpleadoBodegasController {
         return ResponseEntity.ok(bodegasServices.BuscarPorId(id));
     }
 
-    @GetMapping("/encargado/{id}")
-    public ResponseEntity<List<BodegaDTO>> getByEncargado(
-            @PathVariable Long id,
-            @RequestParam Long usuarioId) {
-
-        return ResponseEntity.ok(bodegasServices.buscarPorEncargado(id));
+    @GetMapping("/encargado")
+    public ResponseEntity<List<BodegaDTO>> getByEncargado(@RequestParam Long usuarioId) {
+        return ResponseEntity.ok(bodegasServices.buscarPorEncargado(usuarioId));
     }
-
-    @GetMapping("/ubicacion/{ciudad}")
-    public ResponseEntity<List<BodegaDTO>> getByCiudad(
-            @PathVariable String ciudad,
-            @RequestParam Long usuarioId) {
-
-        return ResponseEntity.ok(bodegasServices.listarPorCiudad(ciudad));
+    @GetMapping("/{bodegaId}/productos")
+    public List<ProductoBodegaDto> obtenerProductos(@PathVariable Long bodegaId) {
+        return bodegaProductoService.obtenerProductosPorBodega(bodegaId);
     }
 
     @GetMapping("/capacidad/{limite}")

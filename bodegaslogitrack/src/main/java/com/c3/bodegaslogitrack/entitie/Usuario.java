@@ -60,7 +60,6 @@ public class Usuario {
     public Set<Auditoria> getAuditorias() { return auditorias; }
     public void setAuditorias(Set<Auditoria> auditorias) { this.auditorias = auditorias; }
 
-    // ===== Evita ConcurrentModificationException =====
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

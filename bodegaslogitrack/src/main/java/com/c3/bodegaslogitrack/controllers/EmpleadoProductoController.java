@@ -48,4 +48,12 @@ public class EmpleadoProductoController {
         List<ProductoDTO> productos = productoService.listarPorPrecio(precio);
         return ResponseEntity.ok(productos);
     }
+
+    @PostMapping("/crear")
+    public ResponseEntity<ProductoDTO> crearProductoParaEmpleado(
+            @RequestBody ProductoDTO productoDTO,
+            @RequestParam Long usuarioId) {
+        ProductoDTO nuevoProducto = productoService.crearProductoParaEmpleado(productoDTO, usuarioId);
+        return ResponseEntity.ok(nuevoProducto);
+    }
 }

@@ -7,9 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.c3.bodegaslogitrack.dto.ProductoDTO;
+import com.c3.bodegaslogitrack.entitie.Bodega;
+import com.c3.bodegaslogitrack.entitie.BodegaProducto;
 import com.c3.bodegaslogitrack.entitie.Producto;
 import com.c3.bodegaslogitrack.entitie.Usuario;
 import com.c3.bodegaslogitrack.exceptions.ResourceNotFoundException;
+import com.c3.bodegaslogitrack.repository.BodegaProductoRepository;
 import com.c3.bodegaslogitrack.repository.ProductoRepository;
 import com.c3.bodegaslogitrack.repository.UsuarioRepository;
 
@@ -17,7 +20,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 @Service
-
 public class ProductoService {
     
     @Autowired
@@ -26,7 +28,13 @@ public class ProductoService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-     @Autowired
+    @Autowired
+    private BodegaProductoRepository bodegaProductoRepository;
+
+    @Autowired
+    private UsuarioService usuarioService;
+
+    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @PersistenceContext
@@ -77,36 +85,60 @@ public class ProductoService {
         return toDto(producto);
     }
 
+    @Transactional
+    public ProductoDTO crearProductoParaEmpleado(ProductoDTO dto, Long usuarioId) {
 
-     @Transactional
-    public ProductoDTO actualizar(Long id, ProductoDTO dto) {
-        // 1️⃣ Validar que el producto exista
-        Producto producto = productoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
-
-        // 2️⃣ Validar que el usuario exista (si viene en el DTO)
-        if (dto.getUsuarioId() == null) {
-            throw new RuntimeException("UsuarioId es obligatorio para la auditoría");
+        Usuario empleado = usuarioService.findById(usuarioId);
+        
+        if (empleado.getBodegasEncargadas().isEmpty()) {
+            throw new RuntimeException("El empleado no tiene ninguna bodega asignada");
         }
-        Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // 3️⃣ Setear la variable de sesión para que el trigger la use
-        entityManager.createNativeQuery("SET @current_user_id = :userId")
-                .setParameter("userId", usuario.getId())
-                .executeUpdate();
+        // Tomamos la primera bodega asignada al empleado
+        Bodega bodega = empleado.getBodegasEncargadas().iterator().next();
 
-        // 4️⃣ Actualizar los campos del producto
+        Producto producto = new Producto();
         producto.setNombre(dto.getNombre());
         producto.setCategoria(dto.getCategoria());
         producto.setPrecio(dto.getPrecio());
         producto.setStock(dto.getStock());
         producto.setActivo(dto.getActivo());
 
-        // 5️⃣ Guardar
         productoRepository.save(producto);
 
-        // 6️⃣ Retornar DTO actualizado
+        BodegaProducto bp = new BodegaProducto();
+        bp.setBodega(bodega);
+        bp.setProducto(producto);
+        bp.setStock(dto.getStock());
+
+        bodegaProductoRepository.save(bp);
+
+        return toDto(producto);
+    }
+
+     @Transactional
+    public ProductoDTO actualizar(Long id, ProductoDTO dto) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
+
+        if (dto.getUsuarioId() == null) {
+            throw new RuntimeException("UsuarioId es obligatorio para la auditoría");
+        }
+        Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        entityManager.createNativeQuery("SET @current_user_id = :userId")
+                .setParameter("userId", usuario.getId())
+                .executeUpdate();
+
+        producto.setNombre(dto.getNombre());
+        producto.setCategoria(dto.getCategoria());
+        producto.setPrecio(dto.getPrecio());
+        producto.setStock(dto.getStock());
+        producto.setActivo(dto.getActivo());
+
+        productoRepository.save(producto);
+
         return toDto(producto);
     }
     // ----------------------------- Eliminar Producto
