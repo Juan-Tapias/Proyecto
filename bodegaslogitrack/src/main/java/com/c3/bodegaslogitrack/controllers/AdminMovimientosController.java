@@ -9,7 +9,15 @@ import java.util.Map;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.c3.bodegaslogitrack.dto.MovimientoDTO;
 import com.c3.bodegaslogitrack.dto.MovimientoResponseDTO;
@@ -21,27 +29,26 @@ import com.c3.bodegaslogitrack.services.MovimientosServices;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/movimientos")
+@RequestMapping("/api/admin/movimientos")
 @RequiredArgsConstructor
-public class MovimientosController {
+public class AdminMovimientosController {
 
     private final MovimientosServices movimientosServices;
     private final BodegaRepository bodegaRepository;
     private final MovimientoRepository movimientoRepository;
     private final ProductoRepository productoRepository;
 
-
     @GetMapping("/resumen")
     public Map<String, Object> obtenerResumen() {
         Map<String, Object> resumen = new HashMap<>();
 
-        long totalBodegas = bodegaRepository.count();
-        long totalProductos = productoRepository.count();
+        Long totalBodegas = bodegaRepository.count();
+        Long totalProductos = productoRepository.count();
 
         LocalDate hoy = LocalDate.now();
-        long movimientosHoy = movimientoRepository.countByFechaBetween(
-            hoy.atStartOfDay(),
-            hoy.plusDays(1).atStartOfDay()
+        Long movimientosHoy = movimientoRepository.countByFechaBetween(
+                hoy.atStartOfDay(),
+                hoy.plusDays(1).atStartOfDay()
         );
 
         resumen.put("totalBodegas", totalBodegas);
@@ -74,17 +81,16 @@ public class MovimientosController {
         MovimientoDTO actualizado = movimientosServices.actualizarMovimiento(id, dto);
         return ResponseEntity.ok(actualizado);
     }
+
     @GetMapping("/rango")
-        public ResponseEntity<List<MovimientoResponseDTO>> obtenerPorRango(
-                @RequestParam("inicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
-                @RequestParam("fin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fin) {
+    public ResponseEntity<List<MovimientoResponseDTO>> obtenerPorRango(
+            @RequestParam("inicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+            @RequestParam("fin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fin) {
 
-            List<MovimientoResponseDTO> movimientos = movimientosServices.buscarPorRangoFechas(inicio, fin);
-            return ResponseEntity.ok(movimientos);
-        }
+        List<MovimientoResponseDTO> movimientos = movimientosServices.buscarPorRangoFechas(inicio, fin);
+        return ResponseEntity.ok(movimientos);
+    }
 
-
-    /** DELETE */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarMovimiento(@PathVariable Long id) {
         movimientosServices.eliminarMovimiento(id);

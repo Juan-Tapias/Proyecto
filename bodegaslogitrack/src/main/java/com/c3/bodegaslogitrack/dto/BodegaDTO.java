@@ -1,5 +1,6 @@
 package com.c3.bodegaslogitrack.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -12,6 +13,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BodegaDTO {
 
+    private Long id; 
+
+
     @NotBlank(message = "El nombre no puede estar vacío")
     @Size(max = 100, message = "El nombre no puede tener más de 100 caracteres")
     private String nombre;
@@ -23,6 +27,11 @@ public class BodegaDTO {
     @NotNull(message = "La capacidad no puede estar vacía")
     private Integer capacidad;
 
-    @NotNull(message = "El encargado no puede estar vacío")
+    @JsonIgnore
     private Long encargadoId;
+
+    private String encargadoUserName;
+
+    @JsonIgnore
+    private Long usuarioId;
 }
