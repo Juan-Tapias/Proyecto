@@ -34,60 +34,91 @@ import lombok.RequiredArgsConstructor;
 public class MovimientosServices {
 
     private final MovimientoRepository movimientoRepository;
-    private final UsuarioRepository usuarioRepository;
     private final BodegaRepository bodegaRepository;
     private final ProductoRepository productoRepository;
+    private final UsuarioRepository usuarioRepository;
 
     @PersistenceContext
     private EntityManager em;
 
-@Transactional
-public MovimientoDTO crearMovimiento(MovimientoDTO dto) {
-    Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
-            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+    @Transactional
+    public MovimientoDTO crearMovimiento(MovimientoDTO dto, Long usuarioId) {
 
-    Movimiento movimiento = new Movimiento();
-    movimiento.setUsuario(usuario);
-    movimiento.setTipo(dto.getTipoMovimiento());
-    movimiento.setComentario(dto.getComentario());
-    movimiento.setFecha(LocalDateTime.now());
+        em.createNativeQuery("SET @current_user_id = :userId")
+                .setParameter("userId", usuarioId)
+                .executeUpdate();
 
-    if (dto.getBodegaOrigenId() != null) {
-        Bodega origen = bodegaRepository.findById(dto.getBodegaOrigenId())
-                .orElseThrow(() -> new ResourceNotFoundException("Bodega origen no encontrada"));
-        movimiento.setBodegaOrigen(origen);
-    }
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+        .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
-    if (dto.getBodegaDestinoId() != null) {
-        Bodega destino = bodegaRepository.findById(dto.getBodegaDestinoId())
-                .orElseThrow(() -> new ResourceNotFoundException("Bodega destino no encontrada"));
-        movimiento.setBodegaDestino(destino);
-    }
+        
+        Movimiento movimiento = new Movimiento();
+        movimiento.setTipo(dto.getTipoMovimiento());
+        movimiento.setUsuario(usuario);
+        movimiento.setComentario(dto.getComentario());
+        movimiento.setFecha(LocalDateTime.now());
 
+        switch (dto.getTipoMovimiento()) {
+
+            case ENTRADA -> {
+                if (dto.getBodegaDestinoId() == null) {
+                    throw new ResourceNotFoundException("La ENTRADA requiere bodegaDestinoId");
+                }
+                Bodega destino = bodegaRepository.findById(dto.getBodegaDestinoId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Bodega destino no encontrada"));
+                movimiento.setBodegaDestino(destino);
+            }
+
+            case SALIDA -> {
+                if (dto.getBodegaOrigenId() == null) {
+                    throw new ResourceNotFoundException("La SALIDA requiere bodegaOrigenId");
+                }
+                Bodega origen = bodegaRepository.findById(dto.getBodegaOrigenId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Bodega origen no encontrada"));
+                movimiento.setBodegaOrigen(origen);
+            }
+
+            case TRANSFERENCIA -> {
+                if (dto.getBodegaOrigenId() == null || dto.getBodegaDestinoId() == null) {
+                    throw new ResourceNotFoundException("La TRANSFERENCIA requiere bodegaOrigenId y bodegaDestinoId");
+                }
+                Bodega origen = bodegaRepository.findById(dto.getBodegaOrigenId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Bodega origen no encontrada"));
+                Bodega destino = bodegaRepository.findById(dto.getBodegaDestinoId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Bodega destino no encontrada"));
+                movimiento.setBodegaOrigen(origen);
+                movimiento.setBodegaDestino(destino);
+            }
+        }
+
+        // 4️⃣ Procesar detalles
         Set<MovimientoDetalle> detallesSet = new HashSet<>();
+
         for (MovimientoDetalleDTO detDTO : dto.getDetalles()) {
+
             Producto producto = productoRepository.findById(detDTO.getProductoId())
                     .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
 
-            if ((dto.getTipoMovimiento() == TipoMovimiento.SALIDA
-                    || dto.getTipoMovimiento() == TipoMovimiento.TRANSFERENCIA)
-                    && producto.getStock() < detDTO.getCantidad()) {
+            // Validación de stock en SALIDA y TRANSFERENCIA
+            if ((dto.getTipoMovimiento() == TipoMovimiento.SALIDA ||
+                dto.getTipoMovimiento() == TipoMovimiento.TRANSFERENCIA)
+                && producto.getStock() < detDTO.getCantidad()) {
+
                 throw new ResourceNotFoundException("Stock insuficiente: " + producto.getNombre());
             }
 
-            int nuevoStock = switch (dto.getTipoMovimiento()) {
+            // Calcular nuevo stock
+            Integer nuevoStock = switch (dto.getTipoMovimiento()) {
                 case ENTRADA -> producto.getStock() + detDTO.getCantidad();
                 case SALIDA -> producto.getStock() - detDTO.getCantidad();
-                case TRANSFERENCIA -> producto.getStock();
+                case TRANSFERENCIA -> producto.getStock(); // En Transferencia no se cambia stock aquí
             };
 
-            em.createNativeQuery("SET @current_user_id = :userId")
-            .setParameter("userId", usuario.getId())
-            .executeUpdate();
-
+            // Actualizar stock
             producto.setStock(nuevoStock);
-            productoRepository.save(producto);
+            productoRepository.save(producto);  // 🔥 TRIGGER DE PRODUCTO SE EJECUTA AQUÍ
 
+            // Crear detalle
             MovimientoDetalle detalle = new MovimientoDetalle();
             detalle.setProducto(producto);
             detalle.setCantidad(detDTO.getCantidad());
@@ -98,9 +129,14 @@ public MovimientoDTO crearMovimiento(MovimientoDTO dto) {
 
         movimiento.setDetalles(detallesSet);
 
+        // 5️⃣ Guardar movimiento final
         Movimiento guardado = movimientoRepository.save(movimiento);
+
+        // 6️⃣ Retornar DTO
         return toDto(guardado);
     }
+
+
 
 
     @Transactional(readOnly = true)
