@@ -103,6 +103,11 @@ public class UsuarioService {
     usuarioRepository.delete(usuario);
     }
 
+        public Usuario findById(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+    }
+
    private UsuarioDto convertToResponseDto(Usuario usuario) {
         UsuarioDto dto = new UsuarioDto();
         dto.setId(usuario.getId());

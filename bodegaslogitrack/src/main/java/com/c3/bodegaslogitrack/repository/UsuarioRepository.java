@@ -9,5 +9,7 @@ import com.c3.bodegaslogitrack.entitie.Usuario;
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByUsername(String username);
 
+    Optional<Usuario> findById(Long id);
+
     boolean existsByUsername(String username);
 }
