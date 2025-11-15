@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,10 +58,14 @@ public class AdminMovimientosController {
     }
 
     @PostMapping
-    public ResponseEntity<MovimientoDTO> crearMovimiento(@RequestBody MovimientoDTO dto) {
-        MovimientoDTO creado = movimientosServices.crearMovimiento(dto);
-        return new ResponseEntity<>(creado, HttpStatus.CREATED);
+    public ResponseEntity<MovimientoDTO> crearMovimiento(
+            @RequestParam Long usuarioId,
+            @RequestBody MovimientoDTO dto) {
+
+        MovimientoDTO response = movimientosServices.crearMovimiento(dto, usuarioId);
+        return ResponseEntity.ok(response);
     }
+
 
     @GetMapping
     public ResponseEntity<List<MovimientoResponseDTO>> listarMovimientos() {
