@@ -8,6 +8,7 @@ import com.c3.bodegaslogitrack.dto.ProductoBodegaDto;
 import com.c3.bodegaslogitrack.entitie.Bodega;
 import com.c3.bodegaslogitrack.entitie.BodegaProducto;
 import com.c3.bodegaslogitrack.entitie.Producto;
+import com.c3.bodegaslogitrack.exceptions.ResourceNotFoundException;
 import com.c3.bodegaslogitrack.repository.BodegaProductoRepository;
 import com.c3.bodegaslogitrack.repository.BodegaRepository;
 import com.c3.bodegaslogitrack.repository.ProductoRepository;
@@ -47,10 +48,10 @@ public class BodegaProductoService {
     public ProductoBodegaDto asignarProductoABodega(Long bodegaId, Long productoId, Integer cantidad) {
 
         Bodega bodega = bodegaRepository.findById(bodegaId)
-                .orElseThrow(() -> new RuntimeException("Bodega no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada"));
 
         Producto producto = productoRepository.findById(productoId)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
 
         BodegaProducto existente = bodegaProductoRepository
                 .findByBodegaId(bodegaId)
@@ -80,10 +81,10 @@ public class BodegaProductoService {
                 .stream()
                 .filter(x -> x.getProducto().getId().equals(productoId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("El producto no existe en esta bodega"));
+                .orElseThrow(() -> new ResourceNotFoundException("El producto no existe en esta bodega"));
 
         if (bp.getStock() < cantidad) {
-            throw new RuntimeException("Stock insuficiente en la bodega");
+            throw new ResourceNotFoundException("Stock insuficiente en la bodega");
         }
 
         bp.setStock(bp.getStock() - cantidad);

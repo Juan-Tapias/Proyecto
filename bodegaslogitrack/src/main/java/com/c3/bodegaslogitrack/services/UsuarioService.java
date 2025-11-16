@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.c3.bodegaslogitrack.dto.UsuarioDto;
 import com.c3.bodegaslogitrack.entitie.Usuario;
+import com.c3.bodegaslogitrack.exceptions.ResourceNotFoundException;
 import com.c3.bodegaslogitrack.repository.UsuarioRepository;
 
 @Service
@@ -67,7 +68,7 @@ public class UsuarioService {
 
     public UsuarioDto buscarPorUsername(String username) {
     Usuario usuario = usuarioRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado: " + username));
     return convertToResponseDto(usuario);
     }
 
@@ -78,10 +79,10 @@ public class UsuarioService {
 
     public UsuarioDto actualizarUsuario(Long id, UsuarioDto usuarioDto) {
     Usuario usuario = usuarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
     if (!usuario.getUsername().equals(usuarioDto.getUsername()) && 
         usuarioRepository.existsByUsername(usuarioDto.getUsername())) {
-        throw new RuntimeException("El username ya está en uso");
+        throw new ResourceNotFoundException("El username ya está en uso");
     }
     
     usuario.setUsername(usuarioDto.getUsername());
@@ -98,14 +99,14 @@ public class UsuarioService {
 
     public void eliminarUsuario(String username) {
     Usuario usuario = usuarioRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado: " + username));
     
     usuarioRepository.delete(usuario);
     }
 
         public Usuario findById(Long id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
     }
 
    private UsuarioDto convertToResponseDto(Usuario usuario) {
