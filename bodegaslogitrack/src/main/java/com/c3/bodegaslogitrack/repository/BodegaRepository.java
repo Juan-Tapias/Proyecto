@@ -17,4 +17,7 @@ public interface BodegaRepository  extends JpaRepository<Bodega, Long>{
 
     // Buscar por encargado
     List<Bodega> findByEncargado(Usuario encargado);
+
+    Long countByEncargadoId(Long usuarioId);
+
 }

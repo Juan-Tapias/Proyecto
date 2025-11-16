@@ -30,4 +30,6 @@ public class ProductoDTO {
     
     private Long usuarioId; 
 
+    private Long bodegaId;
+
 }

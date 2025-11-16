@@ -11,8 +11,10 @@ import com.c3.bodegaslogitrack.entitie.Bodega;
 import com.c3.bodegaslogitrack.entitie.BodegaProducto;
 import com.c3.bodegaslogitrack.entitie.Producto;
 import com.c3.bodegaslogitrack.entitie.Usuario;
+import com.c3.bodegaslogitrack.entitie.enums.Rol;
 import com.c3.bodegaslogitrack.exceptions.ResourceNotFoundException;
 import com.c3.bodegaslogitrack.repository.BodegaProductoRepository;
+import com.c3.bodegaslogitrack.repository.BodegaRepository;
 import com.c3.bodegaslogitrack.repository.ProductoRepository;
 import com.c3.bodegaslogitrack.repository.UsuarioRepository;
 
@@ -30,6 +32,9 @@ public class ProductoService {
 
     @Autowired
     private BodegaProductoRepository bodegaProductoRepository;
+
+    @Autowired
+    private BodegaRepository bodegaRepository;
 
     @Autowired
     private UsuarioService usuarioService;
@@ -85,36 +90,39 @@ public class ProductoService {
         return toDto(producto);
     }
 
-    @Transactional
+   @Transactional
     public ProductoDTO crearProductoParaEmpleado(ProductoDTO dto, Long usuarioId) {
-
         Usuario empleado = usuarioService.findById(usuarioId);
-        
-        if (empleado.getBodegasEncargadas().isEmpty()) {
-            throw new RuntimeException("El empleado no tiene ninguna bodega asignada");
-        }
-
-        // Tomamos la primera bodega asignada al empleado
-        Bodega bodega = empleado.getBodegasEncargadas().iterator().next();
 
         Producto producto = new Producto();
         producto.setNombre(dto.getNombre());
         producto.setCategoria(dto.getCategoria());
         producto.setPrecio(dto.getPrecio());
-        producto.setStock(dto.getStock());
         producto.setActivo(dto.getActivo());
-
         productoRepository.save(producto);
+
+        Bodega bodega;
+
+        if (empleado.getRol() == Rol.ADMIN) {
+            bodega = bodegaRepository.findById(dto.getBodegaId())
+                    .orElseThrow(() -> new RuntimeException("Bodega no encontrada"));
+        } else {
+            bodega = empleado.getBodegasEncargadas().stream()
+                    .filter(b -> b.getId().equals(dto.getBodegaId()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Empleado no tiene permiso para esa bodega"));
+        }
 
         BodegaProducto bp = new BodegaProducto();
         bp.setBodega(bodega);
         bp.setProducto(producto);
         bp.setStock(dto.getStock());
-
         bodegaProductoRepository.save(bp);
 
         return toDto(producto);
     }
+
+
 
      @Transactional
     public ProductoDTO actualizar(Long id, ProductoDTO dto) {
@@ -174,8 +182,8 @@ public class ProductoService {
     }
 
     // ---------------------------------- Listar productos por stock
-    public List<ProductoDTO> listarPorStock(Integer stock) {
-        List<Producto> productos = productoRepository.findByStockLessThanEqual(stock);
+    public List<ProductoDTO> listarPorStock() {
+        List<Producto> productos = productoRepository.findByStockLessThanEqual(10);
         if (productos.isEmpty()) {
             throw new ResourceNotFoundException("No se encontraron productos");
         }

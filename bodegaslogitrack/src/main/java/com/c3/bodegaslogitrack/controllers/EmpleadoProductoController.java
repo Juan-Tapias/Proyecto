@@ -37,9 +37,9 @@ public class EmpleadoProductoController {
         return ResponseEntity.ok(productos);
     }
 
-    @GetMapping("/stock/{stock}")
-    public ResponseEntity<List<ProductoDTO>> listarPorStock(@PathVariable Integer stock) {
-        List<ProductoDTO> productos = productoService.listarPorStock(stock);
+    @GetMapping("/stock-bajo")
+    public ResponseEntity<List<ProductoDTO>> listarPorStock() {
+        List<ProductoDTO> productos = productoService.listarPorStock();
         return ResponseEntity.ok(productos);
     }
 
@@ -55,5 +55,9 @@ public class EmpleadoProductoController {
             @RequestParam Long usuarioId) {
         ProductoDTO nuevoProducto = productoService.crearProductoParaEmpleado(productoDTO, usuarioId);
         return ResponseEntity.ok(nuevoProducto);
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductoDTO> actualizar(@PathVariable Long id, @RequestBody ProductoDTO dto) {
+        return ResponseEntity.ok(productoService.actualizar(id, dto));
     }
 }
