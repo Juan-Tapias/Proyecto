@@ -1,7 +1,6 @@
 package com.c3.bodegaslogitrack.dto;
 
 import com.c3.bodegaslogitrack.entitie.enums.Rol;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -30,7 +29,6 @@ public class UsuarioDto {
 
     private Boolean activo;
 
-    @JsonIgnore
      private Integer cantidadBodegas;
 
 }

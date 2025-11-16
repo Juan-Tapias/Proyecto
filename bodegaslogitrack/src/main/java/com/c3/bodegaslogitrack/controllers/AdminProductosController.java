@@ -36,9 +36,9 @@ public class AdminProductosController {
         return ResponseEntity.ok(productoService.listarPorCategoria(categoria));
     }
 
-    @GetMapping("/stock/{stock}")
-    public ResponseEntity<List<ProductoDTO>> listarPorStock(@PathVariable Integer stock) {
-        return ResponseEntity.ok(productoService.listarPorStock(stock));
+    @GetMapping("/stock-bajo")
+    public ResponseEntity<List<ProductoDTO>> listarPorStock() {
+        return ResponseEntity.ok(productoService.listarPorStock());
     }
 
     @GetMapping("/precio/{precio}")

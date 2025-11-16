@@ -54,4 +54,15 @@ public class EmpleadoBodegasController {
 
         return ResponseEntity.ok(bodegasServices.listarPorCapacidad(limite));
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<BodegaDTO> update(
+            @PathVariable Long id,
+            @RequestBody BodegaDTO dto,
+            @RequestParam Long usuarioId) {
+
+        dto.setUsuarioId(usuarioId);
+        BodegaDTO updated = bodegasServices.actualizar(id, dto);
+
+        return ResponseEntity.ok(updated);
+    }
 }

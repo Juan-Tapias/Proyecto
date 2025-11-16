@@ -9,4 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BodegaProductoRepository extends JpaRepository<BodegaProducto, Long>{
     List<BodegaProducto> findByBodegaId(Long bodegaId);
+
+    Long countByBodegaEncargadoId(Long usuarioId);
+
 }

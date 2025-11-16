@@ -27,6 +27,9 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
     // ----------------------------- Contar movimientos entre fechas
     Long countByFechaBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
 
+    Long countByUsuarioIdAndFechaBetween(Long usuarioId, LocalDateTime inicio, LocalDateTime fin);
+
+
     // ----------------------------- Listar movimientos entre fechas (sin filtrar por usuario, para Admin)
     List<Movimiento> findByFechaBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
 
