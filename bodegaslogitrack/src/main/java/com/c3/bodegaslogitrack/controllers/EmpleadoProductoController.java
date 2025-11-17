@@ -60,4 +60,12 @@ public class EmpleadoProductoController {
     public ResponseEntity<ProductoDTO> actualizar(@PathVariable Long id, @RequestBody ProductoDTO dto) {
         return ResponseEntity.ok(productoService.actualizar(id, dto));
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminar(
+            @PathVariable Long id,
+            @RequestParam Long usuarioId
+    ) {
+        productoService.eliminar(id, usuarioId);
+        return ResponseEntity.ok("Producto eliminado");
+    }
 }

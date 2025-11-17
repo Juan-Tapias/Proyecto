@@ -1,7 +1,5 @@
 package com.c3.bodegaslogitrack.entitie;
 
-import java.security.Timestamp;
-
 public class ErrorResponse {
     private boolean success;
     private String error;
