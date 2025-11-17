@@ -21,6 +21,25 @@ public class UsuarioService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    public boolean matchesMixed(String raw, String stored) {
+        System.out.println("RAW: [" + raw + "]");
+        System.out.println("STORED: [" + stored + "]");
+        
+        boolean isHash = stored.startsWith("$2a$") || stored.startsWith("$2b$") || stored.startsWith("$2y$");
+        System.out.println("Is BCrypt? " + isHash);
+
+        if (!isHash) {
+            boolean eq = raw.equals(stored);
+            System.out.println("Comparando texto plano => " + eq);
+            return eq;
+        }
+
+        boolean match = passwordEncoder.matches(raw, stored);
+        System.out.println("Comparando BCrypt => " + match);
+        return match;
+    }
+
+
     public Usuario registrar(UsuarioDto dto){
         Usuario usuario = new Usuario();
         usuario.setUsername(dto.getUsername());
@@ -34,9 +53,11 @@ public class UsuarioService {
 
     public UsuarioDto login(String nombre, String password) {
         Optional<Usuario> usuarioOp = usuarioRepository.findByUsername(nombre);
+
         if (usuarioOp.isPresent()) {
             Usuario usuario = usuarioOp.get();
-            if (passwordEncoder.matches(password, usuario.getPassword())) {
+
+            if (matchesMixed(password, usuario.getPassword())) {
                 UsuarioDto dto = new UsuarioDto();
                 dto.setUsername(usuario.getUsername());
                 dto.setNombre(usuario.getNombre());
@@ -47,6 +68,8 @@ public class UsuarioService {
         }
         return null;
     }
+
+
 
     public Usuario loginEntity(String username, String password) {
     Optional<Usuario> usuarioOp = usuarioRepository.findByUsername(username);

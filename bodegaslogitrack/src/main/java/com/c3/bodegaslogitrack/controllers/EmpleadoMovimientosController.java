@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -91,5 +92,11 @@ public class EmpleadoMovimientosController {
         resumen.put("movimientosHoy", movimientosHoy);
 
         return resumen;
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<MovimientoDTO> actualizarMovimiento(@PathVariable Long id,
+                                                              @RequestBody MovimientoDTO dto) {
+        MovimientoDTO actualizado = movimientosServices.actualizarMovimiento(id, dto);
+        return ResponseEntity.ok(actualizado);
     }
 }

@@ -325,3 +325,9 @@ INSERT INTO auditoria (entidad, entidad_id, tipo_operacion, usuario_id, valores_
 ('movimiento', 18, 'INSERT', 2, NULL, JSON_OBJECT('tipo', 'ENTRADA', 'bodega_destino_id', 9, 'usuario_id', 2)),
 ('producto', 50, 'DELETE', 5, JSON_OBJECT('nombre', 'Extintor industrial'), NULL);
 
+
+UPDATE usuario SET password = '$2a$12$/icN3qQ47NPpfVCW7T3npecurnQN.NPj3MAmXkl.dSC8Dt0vhAYjS' WHERE username='jlopez';
+UPDATE usuario SET password = '$2a$12$qJIrtB9go3gN5EwISdO4pe9/7ZgWvyJCmdloFr6pqUHBqORanwtMG' WHERE username='mgarcia';
+UPDATE usuario SET password = '$2a$12$lo2cONKu7YvjCG/1P9y5AOKf4B3ehtF1EIxJwOeRovZ2qa0sq.UEK' WHERE username='dfernandez';
+UPDATE usuario SET password = '$2a$12$RJv1DHnmgu0iPsBHirktF.ot4hGTL6sUBSjAhPP18RR6XfmiKKNq2' WHERE username='vramirez';
+UPDATE usuario SET password = '$2a$12$w1K.AIfqfigXa.kNLis0j.Xc/d.RGQ74SFEe.N9j1lftS9wCClTCK' WHERE username='lrueda';
