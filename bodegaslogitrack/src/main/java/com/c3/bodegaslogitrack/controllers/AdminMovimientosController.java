@@ -72,6 +72,11 @@ public class AdminMovimientosController {
         return ResponseEntity.ok(movimientosServices.listarMovimientos());
     }
 
+    @GetMapping("/recientes")
+    public ResponseEntity<List<MovimientoResponseDTO>> listarRecientes() {
+        return ResponseEntity.ok(movimientosServices.listarRecientes());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<MovimientoDTO> obtenerMovimiento(@PathVariable Long id) {
         MovimientoDTO movimiento = movimientosServices.obtenerPorId(id);
